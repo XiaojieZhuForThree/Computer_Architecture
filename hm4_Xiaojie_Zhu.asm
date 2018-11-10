@@ -42,16 +42,16 @@ exit_it:	li	$v0,	16
 		syscall
 
 getReady:	
-		la	$t0,	txtBuffer
+		la	$t0,	inputBuffer
 		la	$t1,	anotherBuffer
 		li	$s7,	2
 		addi	$t7,	$zero,	1
-		li	$t6,	128		
+		addi	$s2,	$zero,	7		# used to count the number of loops executed		
 
-loop:		lbu	$t2,	($t0)
-		bne	$t2,	$0,	setParity
-		
-move:	
+loop:		lbu	$t2,	0($t0)
+		bne	$t2,	$zero,	setParity
+		j	checkParity
+addOne:	
 		addi	$t0,	$t0,	1
 		addi	$t1,	$t1,	1
 		j	loop
@@ -59,27 +59,27 @@ move:
 setParity:
 		add	$s1,	$zero,	$zero		# used to record the number of 1s
 		add	$s0,	$t2,	$zero		# copy the byte to $s0
-		addi	$s2,	$zero,	7		# used to count the number of loops executed
 		add	$s3,	$zero,	$zero		# set up a counter
-		addi	$s4,	$zero,	1		# set up a checker
-		sb	$t2,	($t1)
-		
+
 count:		
 		beq 	$s3,	$s2,	checkodds
-		andi	$s5,	$s0,	1
-		add	$s1,	$s1,	$s5
+		andi	$s4,	$s0,	1
+		add	$s1,	$s1,	$s4
 		addi	$s3,	$s3,	1
 		srl	$s0,	$s0,	1
-			
+		j 	count	
 checkodds:	
 		divu	$s1,	$s7
 		mfhi	$s6
-		beq	$s6,	$t7,	addnumber
-		j	setParity
+		bne	$s6,	$zero,	addnumber
+		addi	$s0,	$t2,	0
+		j	writeBuffer
 
 addnumber:
-		add	$t2,	$t2,	$t6
-		j	setParity		 	   
+		addi	$s0,	$t2,	128		 	   
 		
-				
-outer:		
+writeBuffer:
+		sb	$s0,	0($t1)			# store the 8-bit data to the new buffer after adding parity
+		j	addOne								
+
+checkParity:	
