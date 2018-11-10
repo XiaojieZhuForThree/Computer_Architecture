@@ -45,7 +45,6 @@ getReady:
 		la	$t0,	inputBuffer
 		la	$t1,	anotherBuffer
 		li	$s7,	2
-		addi	$t7,	$zero,	1
 		addi	$s2,	$zero,	7		# used to count the number of loops executed		
 
 loop:		lbu	$t2,	0($t0)
@@ -82,4 +81,53 @@ writeBuffer:
 		sb	$s0,	0($t1)			# store the 8-bit data to the new buffer after adding parity
 		j	addOne								
 
+checkReady:	
+		la	$t1,	anotherBuffer
+		addi	$s2,	$zero,	7		# used to count the number of loops executed	
+
+setBreakPoint:
+		
+
 checkParity:	
+		lbu	$t2,	($t1)
+		beq	$t2,	$zero,	okay
+		j	checkBegins
+
+checkBegins:
+		add	$s1,	$zero,	$zero		# used to record the number of 1s
+		add	$s0,	$t2,	$zero		# copy the byte to $s0
+		add	$s3,	$zero,	$zero		# set up a counter
+
+checkOne:		
+		beq 	$s3,	$s2,	checkValid
+		andi	$s4,	$s0,	1
+		add	$s1,	$s1,	$s4
+		addi	$s3,	$s3,	1
+		srl	$s0,	$s0,	1
+		j 	count	
+checkValid:	
+		divu	$s1,	$s7
+		mfhi	$s6
+		bne	$s6,	$zero,	corrupted
+		addi	$t1,	$t1, 	1
+		j	checkParity	
+
+okay:		li	$v0,	4
+		la	$a0,	outputOK
+		syscall
+		j	Exit
+
+corrupted:	li	$v0,	4
+		la	$a0,	outputCorrupt
+		syscall
+
+Exit:	
+		li	$v0,	10
+		syscall
+		
+# TestRuns:
+# 1. First, do not manually set the breakpoint and run the program:
+# The data is OK.
+# -- program is finished running --	
+
+# 2. Second, 		
