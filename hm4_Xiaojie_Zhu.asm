@@ -1,6 +1,6 @@
 	.data
 fileName:	.asciiz		"homework4.txt"
-textmessage:	.asciiz		"The quick brown fox jumps over the lazy dog."
+textmessage:	.asciiz		"The quick brown fox jumped over the lazy river."
 inputBuffer:	.space		100
 parityBuffer:	.space		100
 outputOK:	.asciiz		"The data is intact."
@@ -14,10 +14,10 @@ open_file:	li	$v0,	13			# created a new file named "homework4.txt"
 		syscall
 		move	$s6,	$v0
 
-write_file:	li	$v0,	15			# write the sentence "The quick brown fox jumps over the lazy dog."
+write_file:	li	$v0,	15			# write the sentence "The quick brown fox jumped over the lazy river."
 		move	$a0,	$s6			# to the newly created txt file.
 		la	$a1,	textmessage
-		li	$a2,	44
+		li	$a2,	47
 		syscall
 
 exit_file:	li	$v0,	16			# exit the file
@@ -132,6 +132,6 @@ Exit:							# used to exit the file
 # -- program is finished running --	
 
 # 2. Second, we set a breakpoint at checkReady(line 88). Then change the data manually, in my case, 
-# I changed the data 0xe874a072 to 0xf874a072, which will change the number of 1s, and thus the program will print:
+# I changed the data 0x65f66fa0 to 0x75f66fa0, which will change the number of 1s, and thus the program will print:
 #  The data has been corrupted!
 # -- program is finished running --
