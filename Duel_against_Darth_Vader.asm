@@ -20,7 +20,7 @@ noValue:	.asciiz		"You didn't pick a character, "
 return:		.asciiz		"please select one."
 
 endOutput:	.asciiz		"I hope you enjoy the game, "
-endOutput2:	.asciiz		"bye!"
+endOutput2:	.asciiz		"may the force be with you!"
 
 Yoda:		.byte		1
 Vader:		.byte		2
@@ -41,10 +41,11 @@ Divider1:	.asciiz		"\n##########################################################
 Divider2:	.asciiz		"\n------------------------------------------------------------------"
 
 VaderHp:	.asciiz		"\nLord Vader has HP remaining: "
-VaderNo:	.asciiz		", dark force remaing: "
-
+VaderNoF:	.asciiz		", force slot remaing: "
+VaderNoH:	.asciiz		", healing slot remaing: "
 YodaHp:		.asciiz		"\nMaster Yoda has HP remaining: "
-YodaNo:		.asciiz		", force remaing: "
+YodaNoF:	.asciiz		", force slot remaing: "
+YodaNoH:	.asciiz		", healing slot remaing: "
 
 Vader1:		.asciiz		"\n                       .-."
 Vader2:		.asciiz		"\n                      |_:_|"
@@ -99,9 +100,15 @@ Yoda27:		.asciiz		 "\n          :-  -.`./-.      /    `.___. "
 Yoda28:		.asciiz		 "\n                \ `t  ._  /  --- :F_P:"
 Yoda29:		.asciiz		 "\n                  -.t-._: "
 
-HP:		.word 	100
-superHitY:	.word	1
-superHitV:	.word	1
+YodaWin1:	.asciiz 	"\nCongratulations Master Yoda,"
+YodaWin2:	.asciiz		" you brought balance to the force."
+YodaLose1:	.asciiz		"\nI'm sorry Master Yoda,"
+YodaLose2:	.asciiz		" you are defeated by Lord Vader."
+VaderWin1:	.asciiz		"Congratulations Lord Vader,"
+VaderWin2:	.asciiz		" you defended the honor of the Empire!"
+VaderLose1:	.asciiz		"I'm sorry Lord Vader,"
+VaderLose2:	.asciiz		" you failed and disappointed the Emperor!"
+
 
 	.text
 initial:	
@@ -298,7 +305,7 @@ backV:
 Super:		
 		jal	generateRandom
 		addi	$s3,	$a0,	1
-		add	$s3,	$s3,	$s3
+		addi	$s3,	$s3,	10
 		j	determine3
 					
 determine3:
@@ -326,15 +333,15 @@ superV:
 		j	print
 
 healWhich:	
-		bne	$s7,	0,	healE
+		bne	$s7,	0,	determineE
 		bne	$s0,	1,	noV
-		beq	$t3,	0,	usedUpAgain	
+		beq	$t0,	0,	usedUpAgain	
 		j	Recover
 noV:
-		beq	$t4,	0,	usedUpAgain
+		beq	$t1,	0,	usedUpAgain
 		j	Recover
 
-healE:
+determineE:
 		bne	$s0,	1,	gbackV
 		bne	$t0,	0,	Recover			
 		j 	enemyMove
@@ -348,7 +355,8 @@ Recover:
 
 determine4:
 		bne	$s1,	1,	healV
-		add	$s5,	$s5,	$s3
+		add	$s4,	$s4,	$s3
+		jal	healthdeterminerY
 		li	$v0,	4
 		la	$a0,	YodaHeal
 		syscall
@@ -358,8 +366,18 @@ determine4:
 		li	$s1,	2
 		subi	$t0,	$t0,	1
 		j	print
+
+healthdeterminerY:
+		bgt	$s4,	100,	resetY
+		jr	$ra
+
+resetY:
+		addi	$s4,	$zero,	100
+		jr	$ra
+
 healV:
-		add	$s4,	$s4,	$s3
+		add	$s5,	$s5,	$s3
+		jal	healthdeterminerV
 		li	$v0,	4
 		la	$a0,	VaderHeal
 		syscall
@@ -369,6 +387,14 @@ healV:
 		li	$s1,	1
 		subi	$t1,	$t1,	1		
 		j	print
+
+healthdeterminerV:
+		bgt	$s5,	100,	resetV
+		jr	$ra
+
+resetV:
+		addi	$s5,	$zero,	100
+		jr	$ra
 
 		
 generateRandom:
@@ -431,12 +457,21 @@ print:
 		syscall
 		
 		li	$v0,	4
-		la	$a0,	VaderNo
+		la	$a0,	VaderNoF
 		syscall
 		
 		li	$v0,	1
 		add	$a0,	$zero,	$t4
 		syscall
+
+		li	$v0,	4
+		la	$a0,	VaderNoH
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t1
+		syscall
+
 
 		li	$v0,	4
 		la	$a0,	Divider2
@@ -491,13 +526,21 @@ print:
 		syscall
 		
 		li	$v0,	4
-		la	$a0,	YodaNo
+		la	$a0,	YodaNoF
 		syscall
 		
 		li	$v0,	1
 		add	$a0,	$zero,	$t3
 		syscall
-						
+		
+		li	$v0,	4
+		la	$a0,	YodaNoH
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t0
+		syscall
+								
 		li	$v0,	4
 		la	$a0,	Divider1
 		syscall		
@@ -505,10 +548,40 @@ print:
 		
 
 VaderWin:
-	
-				
-YodaWin:
+		bne	$s0,	1,	win1
+		j	lose1
+		
+win1:		li	$v0,	59
+		la	$a0,	VaderWin1
+		la	$a1,	VaderWin2
+		syscall
+		j	endProgram	
 
+lose1:		
+		li	$v0,	59
+		la	$a0,	YodaLose1
+		la	$a1,	YodaLose2
+		syscall
+		j	endProgram
+						
+												
+YodaWin:
+		bne	$s0,	2,	win2
+		j	lose2
+
+win2:
+		li	$v0,	59
+		la	$a0,	YodaWin1
+		la	$a1,	YodaWin2
+		syscall
+		j	endProgram	
+
+lose2:		
+		li	$v0,	59
+		la	$a0,	VaderLose1
+		la	$a1,	VaderLose2
+		syscall
+		j	endProgram
 		
 						
 endProgram:	li	$v0,	59
