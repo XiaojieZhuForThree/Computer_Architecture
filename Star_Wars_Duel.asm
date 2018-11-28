@@ -1,12 +1,12 @@
 	.data
 greeting:	.asciiz		""
-input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want to play: 1. Yoda, 2. Darth Vader"
+input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want to play: 1. Yoda, 2. Darth Vader\n You can always quit the game by clicking 'Cancel'"
 buffer:		.space		2
 
 outputY:	.asciiz		"You have selected Yoda."
-outputYm:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover"
+outputYm:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
 outputV:	.asciiz		"You have selected Darth Vader."
-outputVm:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover"
+outputVm:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
 output2:	.asciiz		" Let's begin!"
 
 wrong:		.asciiz		"Invalid input, "
@@ -662,115 +662,116 @@ newHope:
 		li	$v0,	33
 		li	$a0, 	62
 		li	$a1,	1000
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall			
 
 		li	$v0,	33
 		li	$a0, 	67
-		li	$a1,	1000
-		li	$a2, 	0
+		li	$a1,	1100
+		li	$a2, 	48
 		li	$a3,	127
 		syscall			
 					
 		li	$v0,	33
 		li	$a0, 	69
 		li	$a1,	1000
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall								
 											
 		li	$v0,	33
 		li	$a0, 	70
-		li	$a1,	500
-		li	$a2, 	0
+		li	$a1,	450
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	72
 		li	$a1,	600
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall	
 
 		li	$v0,	33
 		li	$a0, 	70
 		li	$a1,	1000
-		li	$a2, 	0
+		li	$a2, 	48
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	62
+		li	$a1,	1200
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	62
 		li	$a1,	1000
-		li	$a2, 	0
-		li	$a3,	127
-		syscall
-		
-		li	$v0,	33
-		li	$a0, 	62
-		li	$a1,	1000
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall	
 
 		li	$v0,	33
 		li	$a0, 	67
-		li	$a1,	1000
-		li	$a2, 	0
+		li	$a1,	1200
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	69
 		li	$a1,	700
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	70
-		li	$a1,	500
-		li	$a2, 	0
+		li	$a1,	400
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	67
-		li	$a1,	400
-		li	$a2, 	0
+		li	$a1,	500
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	70
-		li	$a1,	500
-		li	$a2, 	0
+		li	$a1,	400
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	67
-		li	$a1,	400
-		li	$a2, 	0
+		li	$a1,	500
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	74
 		li	$a1,	700
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		
 		li	$v0,	33
 		li	$a0, 	72
 		li	$a1,	1000
-		li	$a2, 	0
+		li	$a2, 	48
 		li	$a3,	127
 		syscall
 		jr	$ra
+		
 finalPrint:	
 		beq	$s7,	1,	noPrint
 		li	$v0,	4
