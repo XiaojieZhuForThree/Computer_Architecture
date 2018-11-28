@@ -4,9 +4,9 @@ input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want 
 buffer:		.space		2
 
 outputY:	.asciiz		"You have selected Yoda."
-outputYM:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover"
+outputYm:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover"
 outputV:	.asciiz		"You have selected Darth Vader."
-outputVM:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover"
+outputVm:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover"
 output2:	.asciiz		" Let's begin!"
 
 wrong:		.asciiz		"Invalid input, "
@@ -111,7 +111,8 @@ initial:
 		li	$t4,	3			# Vader's force slot
 		li	$t0,	3			# Yoda's heal slot
 		li	$t1,	3			# Vader's heal slot
-		li	$v0,	51			# input the character
+		
+prompt:		li	$v0,	51			# input the character
 		la	$a0,	input
 		syscall
 		
@@ -129,14 +130,14 @@ repick:		li	$v0,	59
 		la	$a0,	noValue
 		la	$a1,	return
 		syscall
-		j	initial
+		j	prompt
 
 
 invalid:	li	$v0,	59
 		la	$a0,	wrong
 		la	$a1,	goback
 		syscall
-		j	initial
+		j	prompt
 		
 log:		
 		add	$s0,	$a0,	$zero
@@ -167,14 +168,17 @@ start:
 		add	$t2,	$zero,	$zero
 		
 determine:
-		bne	$s0,	1,	pickVM
-		la	$a0,	outputYM
+		ble	$s4,	0,	VaderWin
+		ble	$s5,	0,	YodaWin
+		
+		bne	$s0,	1,	pickVm
+		la	$a0,	outputYm
 		j	determiner
 		
-pickVM:		la	$a0,	outputVM
+pickVm:		la	$a0,	outputVm
 
 determiner:	
-		bne	$s7,	$zero,	yourmove		
+		bne	$s7,	$zero,	yourMove		
 
 enemyMove:	
 		addi	$s7,	$zero,	1
@@ -189,8 +193,10 @@ enemyRan:
 		syscall		
 		jr 	$ra						
 						
-yourmove:	
-		add	$s7,	$zero,	$zero	
+yourMove:	
+		add	$s7,	$zero,	$zero
+
+movePrompt:			
 		li	$v0,	51
 		syscall
 
@@ -227,7 +233,7 @@ usedUp:
 		addi	$s7,	$zero,	1
 		j	determine	
 
-usedUpagain:
+usedUpAgain:
 		li	$v0,	59
 		la	$a0,	usedAgain
 		la	$a1,	goback3	
@@ -250,6 +256,7 @@ Hit:
 		
 determine2:
 		bne	$s1,	1,	hitV
+		li	$s1,	2
 		sub	$s5,	$s5,	$s3
 		li	$v0,	4
 		la	$a0,	YodaHit
@@ -257,9 +264,10 @@ determine2:
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
-		li	$s1,	2
 		j	print
+		
 hitV:
+		li	$s1,	1
 		sub	$s4,	$s4,	$s3
 		li	$v0,	4
 		la	$a0,	VaderHit
@@ -267,7 +275,7 @@ hitV:
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
-		li	$s1,	1
+
 		j	print
 
 whichOne:	
@@ -320,10 +328,10 @@ superV:
 healWhich:	
 		bne	$s7,	0,	healE
 		bne	$s0,	1,	noV
-		beq	$t3,	0,	usedUpagain	
+		beq	$t3,	0,	usedUpAgain	
 		j	Recover
 noV:
-		beq	$t4,	0,	usedUpagain
+		beq	$t4,	0,	usedUpAgain
 		j	Recover
 
 healE:
@@ -495,7 +503,14 @@ print:
 		syscall		
 		j	determine
 		
+
+VaderWin:
+	
+				
+YodaWin:
+
 		
+						
 endProgram:	li	$v0,	59
 		la	$a0,	endOutput
 		la	$a1,	endOutput2
