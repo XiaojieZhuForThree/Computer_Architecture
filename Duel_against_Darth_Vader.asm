@@ -1,16 +1,19 @@
 	.data
 greeting:	.asciiz		""
-input:		.asciiz		"Welcome to the arena! \nPlease select the character you want to play: 1. Luke Skywalker, 2. Iron Man, 3. Harry Potter, 4. Darth Vader"
+input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want to play: 1. Yoda, 2. Darth Vader"
 buffer:		.space		2
 
-outputS:	.asciiz		"You have selected Luke Skywalker."
-outputI:	.asciiz		"You have selected Iron Man."
-outputP:	.asciiz		"You have selected Harry Potter."
+outputY:	.asciiz		"You have selected Yoda."
+outputYM:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover"
 outputV:	.asciiz		"You have selected Darth Vader."
+outputVM:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover"
 output2:	.asciiz		" Let's begin!"
 
 wrong:		.asciiz		"Invalid input, "
+used:		.asciiz		"You can no longer use the force anymore, "
 goback:		.asciiz		"please select a character."
+goback2:	.asciiz		"please select a move."
+goback3:	.asciiz		"please select another move"
 
 noValue:	.asciiz		"You didn't pick a character, "
 return:		.asciiz		"please select one."
@@ -18,20 +21,29 @@ return:		.asciiz		"please select one."
 endOutput:	.asciiz		"I hope you enjoy the game, "
 endOutput2:	.asciiz		"bye!"
 
-Skywalker:	.byte		1
-Iron:		.byte		2
-Potter:		.byte		3
-Vader:		.byte		4
+Yoda:		.byte		1
+Vader:		.byte		2
 
-key1:		.byte 		'1'
-key2:		.byte		'2'
-key3:		.byte	 	'3'
-key4:		.byte 		'4'
+keyHit:		.byte		1
+keySuper:	.byte		2
+keyRecover:	.byte		3
 
-keyHit:		.byte		'a'
-keyDodge:	.byte		'd'
-keySuper:	.byte		's'
+YodaHit:	.asciiz		"\nMaster Yoda striked Darth Vader, causing damage: "
+YodaSuper:	.asciiz		"\nMaster Yoda striked Darth Vader with the force, causing damage: "
+YodaHeal:	.asciiz		"\nMaster Yoda healed himseilf, HP increases by: "
 
+VaderHit:	.asciiz		"\nLord Vader striked Yoda, causing damage: "
+VaderSuper:	.asciiz		"\nLord Vader striked Yoda with the force, causing damage: "
+VaderHeal:	.asciiz		"\nLord Vader healed himseilf, HP increases by: "
+
+Divider1:	.asciiz		"##################################################################"
+Divider2:	.asciiz		"------------------------------------------------------------------"
+
+VaderHp:	.asciiz		"Lord Vader has HP remaining: "
+VaderNo:	.asciiz		", dark force remaing: "
+
+YodaHp:		.asciiz		"Master Yoda has HP remaining: "
+YodaNo:		.asciiz		", force remaing: "
 
 Vader1:		.asciiz		"\n                       .-."
 Vader2:		.asciiz		"\n                      |_:_|"
@@ -88,26 +100,27 @@ Yoda28:		.asciiz		 "\n                \ `t  ._  /  --- :F_P:"
 Yoda29:		.asciiz		 "\n                  -.t-._: "
 
 HP:		.word 	100
-dodge:		.word	3
-youHit:		.word	5
-enemyHit:	.word	8
-superHit:	.word	8
-superHitTimes:	.word	4
+superHitY:	.word	1
+superHitV:	.word	1
 
 	.text
 initial:	
-		li	$v0,	51						# input the character
+		li	$s4,	100			# Yoda's HP
+		li	$s5,	100			# Vader's HP
+		li	$t3,	3			# Yoda's force slot
+		li	$t4,	3			# Vader's force slot
+		li	$v0,	51			# input the character
 		la	$a0,	input
 		syscall
 		
 pick:	
-		li	$t7,	2	
+		li	$t7,	-2	
 		beq	$a1,	$t7,	endProgram
-		li	$t7,	3	
+		li	$t7,	-3	
 		beq	$a1,	$t7,	repick
-		li	$t7,	1
+		li	$t7,	-1
 		beq	$a1,	$t7,	invalid
-		j	prep
+		j	log
 
 	
 repick:		li	$v0,	59
@@ -123,51 +136,212 @@ invalid:	li	$v0,	59
 		syscall
 		j	initial
 		
-	
-prep:		lb	$t5,	Skywalker
-		beq	$a0,	$t5,	pickS	
-		lb	$t5,	Iron
-		beq	$a0,	$t5,	pickI
-		lb	$t5,	Potter
-		beq	$a0,	$t5,	pickP	
+log:		
+		add	$s0,	$a0,	$zero
+		add	$s1,	$a0,	$zero	
+prep:				
+		lb	$t5,	Yoda
+		beq	$s0,	$t5,	pickY	
 		lb	$t5,	Vader
-		beq	$a0,	$t5,	pickV
+		beq	$s0,	$t5,	pickV
 		j	invalid
 
-pickS:	
-		add	$t4,	$zero,	$zero
+pickY:	
 		li	$v0,	59
-		la	$a0,	outputS
+		la	$a0,	outputY
 		la	$a1,	output2
 		syscall
 		j	start
-	
-pickI:	
-		addi	$t4,	$zero,	16
-		li	$v0,	59
-		la	$a0,	outputI
-		la	$a1,	output2
-		syscall
-		j	start
-
-	
-pickP:	
-		addi	$t4,	$zero,	24
-		li	$v0,	59
-		la	$a0,	outputP
-		la	$a1,	output2
-		syscall
-		j	start
-	
+		
 pickV:	
-		addi	$t4,	$zero,	72
 		li	$v0,	59
 		la	$a0,	outputV
 		la	$a1,	output2
 		syscall
 		j	start
 
-start:		li	$v0,	4
+start:
+		addi	$s7,	$zero,	1
+		add	$t2,	$zero,	$zero
+		
+determine:
+		bne	$s0,	1,	pickVM
+		la	$a0,	outputYM
+		j	determiner
+		
+pickVM:		la	$a0,	outputVM
+
+determiner:	
+		bne	$s7,	$zero,	yourmove		
+
+enemyMove:	
+		addi	$s7,	$zero,	1
+		jal	enemyRan
+		addi	$a0,	$a0,	1
+		j	whatYouDo
+		
+enemyRan:
+		li	$v0,	42
+		li	$a0,	50
+		li	$a1,	3
+		syscall		
+		jr 	$ra						
+						
+yourmove:	
+		add	$s7,	$zero,	$zero	
+		li	$v0,	51
+		syscall
+
+validOrNot:
+		li	$t7,	-2	
+		beq	$a1,	$t7,	endProgram
+		li	$t7,	-3	
+		beq	$a1,	$t7,	reEnter
+		li	$t7,	-1
+		beq	$a1,	$t7,	noSuch
+		j	whatYouDo
+
+reEnter:
+		li	$v0,	59
+		la	$a0,	noValue
+		la	$a1,	return
+		syscall
+		addi	$s7,	$zero,	1
+		j	determine
+
+noSuch:
+		li	$v0,	59
+		la	$a0,	wrong
+		la	$a1,	goback2
+		syscall
+		addi	$s7,	$zero,	1
+		j	determine	
+
+usedUp:
+		li	$v0,	59
+		la	$a0,	used
+		la	$a1,	goback3	
+		syscall
+		addi	$s7,	$zero,	1
+		j	determine		
+
+whatYouDo:	
+		lb	$t5,	keyHit
+		beq	$a0,	$t5,	Hit	
+		lb	$t5,	keySuper
+		beq	$a0,	$t5,	whichOne
+		lb	$t5,	keyRecover
+		beq	$a0,	$t5,	Recover
+		j	noSuch		
+		
+Hit:
+		jal	generateRandom
+		addi	$s3,	$a0,	1
+		
+determine2:
+		bne	$s1,	1,	hitY
+		sub	$s5,	$s5,	$s3
+		li	$v0,	4
+		la	$a0,	YodaHit
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	2
+		j	determine
+hitY:
+		sub	$s4,	$s4,	$s3
+		li	$v0,	4
+		la	$a0,	VaderHit
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	1
+		j	determine
+
+whichOne:	
+		bne	$s7,	0,	goE
+		bne	$s0,	1,	seeV
+		beq	$t3,	0,	usedUp	
+		j	Super
+seeV:
+		beq	$t4,	0,	usedUp
+		j	Super
+
+goE:
+		bne	$s0,	1,	backV
+		bne	$t3,	0,	Super			
+		j 	enemyMove
+backV:	
+		bne	$t3,	0,	Super
+		j	enemyMove
+
+Super:		jal	whichOne
+		jal	generateRandom
+		addi	$s3,	$a0,	1
+		add	$s3,	$s3,	$s3
+		j	determine3
+					
+determine3:
+		bne	$s1,	1,	superV
+		sub	$s5,	$s5,	$s3
+		li	$v0,	4
+		la	$a0,	YodaSuper
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	2
+		subi	$t3,	$t3,	1
+		j	determine
+superV:
+		sub	$s4,	$s4,	$s3
+		li	$v0,	4
+		la	$a0,	VaderSuper
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	1
+		subi	$t4,	$t4,	1
+		j	determine
+
+Recover:
+		jal	generateRandom
+		addi	$s3,	$a0,	1
+
+determine4:
+		bne	$s1,	1,	healV
+		add	$s5,	$s5,	$s3
+		li	$v0,	4
+		la	$a0,	YodaHeal
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	2
+		j	determine
+healV:
+		add	$s4,	$s4,	$s3
+		li	$v0,	4
+		la	$a0,	VaderHeal
+		syscall
+		li	$v0,	1
+		add	$a0,	$zero,	$s3
+		syscall
+		li	$s1,	1		
+		j	determine
+		
+generateRandom:
+		li	$v0,	42
+		li	$a0,	20
+		li	$a1,	10
+		syscall
+		jr	$ra
+
+
+print:		li	$v0,	4
 		la	$a0,	Vader1
 		syscall
 		
