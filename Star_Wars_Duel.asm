@@ -102,13 +102,13 @@ Yoda28:		.asciiz		 "\n                \ `t  ._  /  --- :F_P:"
 Yoda29:		.asciiz		 "\n                  -.t-._: "
 
 YodaWin1:	.asciiz 	"\nCongratulations Master Yoda,"
-YodaWin2:	.asciiz		" you brought balance to the force."
+YodaWin2:	.asciiz		" you brought balance to the force and the galaxy."
 YodaLose1:	.asciiz		"\nI'm sorry Master Yoda,"
-YodaLose2:	.asciiz		" you are defeated by Lord Vader."
+YodaLose2:	.asciiz		" you are defeated by the dark force."
 VaderWin1:	.asciiz		"Congratulations Lord Vader,"
 VaderWin2:	.asciiz		" you defended the honor of the Empire!"
 VaderLose1:	.asciiz		"I'm sorry Lord Vader,"
-VaderLose2:	.asciiz		" you failed and disappointed the Emperor!"
+VaderLose2:	.asciiz		" you've failed and disappointed the Emperor!"
 
 
 	.text
