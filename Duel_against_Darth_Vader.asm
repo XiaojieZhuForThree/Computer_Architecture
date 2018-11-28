@@ -17,6 +17,7 @@ goback2:	.asciiz		"please select a move."
 goback3:	.asciiz		"please select another move"
 
 noValue:	.asciiz		"You didn't pick a character, "
+noMove:		.asciiz		"You didn't pick a move, "
 return:		.asciiz		"please select one."
 
 endOutput:	.asciiz		"I hope you enjoy the game, "
@@ -176,8 +177,7 @@ start:
 		
 determine:
 		ble	$s4,	0,	VaderWin
-		ble	$s5,	0,	YodaWin
-		
+		ble	$s5,	0,	YodaWin		
 		bne	$s0,	1,	pickVm
 		la	$a0,	outputYm
 		j	determiner
@@ -195,9 +195,10 @@ enemyMove:
 		
 enemyRan:
 		li	$v0,	42
-		li	$a0,	50
+		add	$a0,	$zero,	$t2
 		li	$a1,	3
-		syscall		
+		syscall
+		addi	$t2,	$t2,	1		
 		jr 	$ra						
 						
 yourMove:	
@@ -218,7 +219,7 @@ validOrNot:
 
 reEnter:
 		li	$v0,	59
-		la	$a0,	noValue
+		la	$a0,	noMove
 		la	$a1,	return
 		syscall
 		addi	$s7,	$zero,	1
@@ -271,7 +272,8 @@ determine2:
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 		
 hitV:
 		li	$s1,	1
@@ -282,35 +284,36 @@ hitV:
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
-
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 
 whichOne:	
 		bne	$s7,	0,	goE
 		bne	$s0,	1,	seeV
-		beq	$t3,	0,	usedUp	
-		j	Super
+		bgt	$t3,	0,	Super	
+		j	usedUp
+
 seeV:
-		beq	$t4,	0,	usedUp
-		j	Super
+		bgt	$t4,	0,	Super
+		j	usedUp
 
 goE:
 		bne	$s0,	1,	backV
-		bne	$t3,	0,	Super			
+		bgt	$t4,	0,	Super			
 		j 	enemyMove
+		
 backV:	
-		bne	$t3,	0,	Super
+		bgt	$t3,	0,	Super
 		j	enemyMove
 
 Super:		
 		jal	generateRandom
 		addi	$s3,	$a0,	1
 		addi	$s3,	$s3,	10
-		j	determine3
-					
 determine3:
 		bne	$s1,	1,	superV
 		sub	$s5,	$s5,	$s3
+		subi	$t3,	$t3,	1
 		li	$v0,	4
 		la	$a0,	YodaSuper
 		syscall
@@ -318,10 +321,11 @@ determine3:
 		add	$a0,	$zero,	$s3
 		syscall
 		li	$s1,	2
-		subi	$t3,	$t3,	1
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 superV:
 		sub	$s4,	$s4,	$s3
+		subi	$t4,	$t4,	1
 		li	$v0,	4
 		la	$a0,	VaderSuper
 		syscall
@@ -329,8 +333,8 @@ superV:
 		add	$a0,	$zero,	$s3
 		syscall
 		li	$s1,	1
-		subi	$t4,	$t4,	1
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 
 healWhich:	
 		bne	$s7,	0,	determineE
@@ -342,16 +346,15 @@ noV:
 		j	Recover
 
 determineE:
-		bne	$s0,	1,	gbackV
-		bne	$t0,	0,	Recover			
+		bne	$s0,	2,	gbackY
+		bgt	$t0,	0,	Recover			
 		j 	enemyMove
-gbackV:	
-		bne	$t1,	0,	Recover
+gbackY:	
+		bgt	$t1,	0,	Recover
 		j	enemyMove
 Recover:
 		jal	generateRandom
 		addi	$s3,	$a0,	1
-
 
 determine4:
 		bne	$s1,	1,	healV
@@ -365,7 +368,8 @@ determine4:
 		syscall
 		li	$s1,	2
 		subi	$t0,	$t0,	1
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 
 healthdeterminerY:
 		bgt	$s4,	100,	resetY
@@ -386,7 +390,8 @@ healV:
 		syscall
 		li	$s1,	1
 		subi	$t1,	$t1,	1		
-		j	print
+		beq	$s7,	1,	print
+		j	determine
 
 healthdeterminerV:
 		bgt	$s5,	100,	resetV
@@ -399,9 +404,10 @@ resetV:
 		
 generateRandom:
 		li	$v0,	42
-		li	$a0,	20
+		add	$a0,	$zero,	$t2
 		li	$a1,	10
 		syscall
+		addi	$t2,	$t2,	1
 		jr	$ra
 
 print:		
@@ -548,6 +554,8 @@ print:
 		
 
 VaderWin:
+		jal	finalPrint
+		jal	ImperialMarch
 		bne	$s0,	1,	win1
 		j	lose1
 		
@@ -566,6 +574,8 @@ lose1:
 						
 												
 YodaWin:
+		jal	finalPrint
+		jal	newHope
 		bne	$s0,	2,	win2
 		j	lose2
 
@@ -583,7 +593,330 @@ lose2:
 		syscall
 		j	endProgram
 		
+ImperialMarch:
+		li	$v0,	33
+		li	$a0, 	55
+		li	$a1,	1000
+		li	$a2, 	48
+		li	$a3,	127
+		syscall			
+
+		li	$v0,	33
+		li	$a0, 	55
+		li	$a1,	1000
+		li	$a2, 	48
+		li	$a3,	127
+		syscall			
+					
+		li	$v0,	33
+		li	$a0, 	55
+		li	$a1,	1000
+		li	$a2, 	48
+		li	$a3,	127
+		syscall								
+											
+		li	$v0,	33
+		li	$a0, 	51
+		li	$a1,	950
+		li	$a2, 	48
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	58
+		li	$a1,	450
+		li	$a2, 	48
+		li	$a3,	127
+		syscall	
+
+		li	$v0,	33
+		li	$a0, 	55
+		li	$a1,	1000
+		li	$a2, 	48
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	51
+		li	$a1,	950
+		li	$a2, 	48
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	58
+		li	$a1,	450
+		li	$a2, 	48
+		li	$a3,	127
+		syscall	
+
+		li	$v0,	33
+		li	$a0, 	55
+		li	$a1,	1000
+		li	$a2, 	48
+		li	$a3,	127
+		syscall
+		jr	$ra	
+
+newHope:
+		li	$v0,	33
+		li	$a0, 	62
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall			
+
+		li	$v0,	33
+		li	$a0, 	67
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall			
+					
+		li	$v0,	33
+		li	$a0, 	69
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall								
+											
+		li	$v0,	33
+		li	$a0, 	70
+		li	$a1,	500
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	72
+		li	$a1,	600
+		li	$a2, 	0
+		li	$a3,	127
+		syscall	
+
+		li	$v0,	33
+		li	$a0, 	70
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	62
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	62
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall	
+
+		li	$v0,	33
+		li	$a0, 	67
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	69
+		li	$a1,	700
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	70
+		li	$a1,	500
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	67
+		li	$a1,	400
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	70
+		li	$a1,	500
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	67
+		li	$a1,	400
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	74
+		li	$a1,	700
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		
+		li	$v0,	33
+		li	$a0, 	72
+		li	$a1,	1000
+		li	$a2, 	0
+		li	$a3,	127
+		syscall
+		jr	$ra
+finalPrint:	
+		beq	$s7,	1,	noPrint
+		li	$v0,	4
+		la	$a0,	Divider1
+		syscall
+		li	$v0,	4
+		la	$a0,	Vader1
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader2
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader3
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader4
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader5
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader6
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader7
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader8
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader9
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Vader10
+		syscall
+								
+		li	$v0,	4
+		la	$a0,	VaderHp
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$s5
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	VaderNoF
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t4
+		syscall
+
+		li	$v0,	4
+		la	$a0,	VaderNoH
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t1
+		syscall
+
+
+		li	$v0,	4
+		la	$a0,	Divider2
+		syscall		
+
+		li	$v0,	4
+		la	$a0,	Yoda1
+		syscall		
 						
+		li	$v0,	4
+		la	$a0,	Yoda2
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda3
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda4
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda5
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda6
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda7
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda8
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda9
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	Yoda10
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	YodaHp
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$s4
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	YodaNoF
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t3
+		syscall
+		
+		li	$v0,	4
+		la	$a0,	YodaNoH
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$t0
+		syscall
+								
+		li	$v0,	4
+		la	$a0,	Divider1
+		syscall		
+		jr	$ra																																																																																																																																																																																																																		
+
+noPrint:
+		jr	$ra																				
+																																																												
 endProgram:	li	$v0,	59
 		la	$a0,	endOutput
 		la	$a1,	endOutput2
