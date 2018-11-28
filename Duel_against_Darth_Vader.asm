@@ -11,6 +11,7 @@ output2:	.asciiz		" Let's begin!"
 
 wrong:		.asciiz		"Invalid input, "
 used:		.asciiz		"You can no longer use the force anymore, "
+usedAgain:	.asciiz		"You can no longer use the heal anymore, "
 goback:		.asciiz		"please select a character."
 goback2:	.asciiz		"please select a move."
 goback3:	.asciiz		"please select another move"
@@ -36,13 +37,13 @@ VaderHit:	.asciiz		"\nLord Vader striked Yoda, causing damage: "
 VaderSuper:	.asciiz		"\nLord Vader striked Yoda with the dark force, causing damage: "
 VaderHeal:	.asciiz		"\nLord Vader healed himseilf, HP increases by: "
 
-Divider1:	.asciiz		"##################################################################"
-Divider2:	.asciiz		"------------------------------------------------------------------"
+Divider1:	.asciiz		"\n##################################################################"
+Divider2:	.asciiz		"\n------------------------------------------------------------------"
 
-VaderHp:	.asciiz		"Lord Vader has HP remaining: "
+VaderHp:	.asciiz		"\nLord Vader has HP remaining: "
 VaderNo:	.asciiz		", dark force remaing: "
 
-YodaHp:		.asciiz		"Master Yoda has HP remaining: "
+YodaHp:		.asciiz		"\nMaster Yoda has HP remaining: "
 YodaNo:		.asciiz		", force remaing: "
 
 Vader1:		.asciiz		"\n                       .-."
@@ -68,7 +69,6 @@ Vader20:	.asciiz		"\n          |     : : :_/_|  /'._\  '--|_\\"
 Vader21:	.asciiz		"\n          /___.-/_|-'   \  \_"
 Vader22:	.asciiz		"\n                         '-'"
 
-
 Yoda1:		.asciiz		 "\n                    ____"
 Yoda2:		.asciiz		 "\n                 _.' :  `._"
 Yoda3:		.asciiz		 "\n             .-.'`.  ;   .'`.-."
@@ -79,7 +79,7 @@ Yoda7:		.asciiz		 "\n       `:-.._J '-.-'L__ `-- ' L_..-;'"
 Yoda8:		.asciiz		 "\n          -.__ ;  .-    -.  : __.- "
 Yoda9:		.asciiz		 "\n             L ' /.------.\ ' J"
 Yoda10:		.asciiz		 "\n               -.    --    .- "
-Yoda11:		.asciiz		 "\n             __.l -:_JL_;- ;.__"
+Yoda11:		.asciiz		 "\n                 l -:_JL_;"
 Yoda12:		.asciiz		 "\n          .-j/'.;  ;""""  / .'\"-."
 Yoda13:		.asciiz		 "\n        .' /:`.  -.:     .-  .';  `."
 Yoda14:		.asciiz		 "\n     .-   / ;   -.  -..-  .-   :     -."
@@ -109,6 +109,8 @@ initial:
 		li	$s5,	100			# Vader's HP
 		li	$t3,	3			# Yoda's force slot
 		li	$t4,	3			# Vader's force slot
+		li	$t0,	3			# Yoda's heal slot
+		li	$t1,	3			# Vader's heal slot
 		li	$v0,	51			# input the character
 		la	$a0,	input
 		syscall
@@ -223,7 +225,15 @@ usedUp:
 		la	$a1,	goback3	
 		syscall
 		addi	$s7,	$zero,	1
-		j	determine		
+		j	determine	
+
+usedUpagain:
+		li	$v0,	59
+		la	$a0,	usedAgain
+		la	$a1,	goback3	
+		syscall
+		addi	$s7,	$zero,	1
+		j	determine	
 
 whatYouDo:	
 		lb	$t5,	keyHit
@@ -231,7 +241,7 @@ whatYouDo:
 		lb	$t5,	keySuper
 		beq	$a0,	$t5,	whichOne
 		lb	$t5,	keyRecover
-		beq	$a0,	$t5,	Recover
+		beq	$a0,	$t5,	healWhich
 		j	noSuch		
 		
 Hit:
@@ -248,7 +258,7 @@ determine2:
 		add	$a0,	$zero,	$s3
 		syscall
 		li	$s1,	2
-		j	determine
+		j	print
 hitV:
 		sub	$s4,	$s4,	$s3
 		li	$v0,	4
@@ -258,7 +268,7 @@ hitV:
 		add	$a0,	$zero,	$s3
 		syscall
 		li	$s1,	1
-		j	determine
+		j	print
 
 whichOne:	
 		bne	$s7,	0,	goE
@@ -294,7 +304,7 @@ determine3:
 		syscall
 		li	$s1,	2
 		subi	$t3,	$t3,	1
-		j	determine
+		j	print
 superV:
 		sub	$s4,	$s4,	$s3
 		li	$v0,	4
@@ -305,11 +315,28 @@ superV:
 		syscall
 		li	$s1,	1
 		subi	$t4,	$t4,	1
-		j	determine
+		j	print
 
+healWhich:	
+		bne	$s7,	0,	healE
+		bne	$s0,	1,	noV
+		beq	$t3,	0,	usedUpagain	
+		j	Recover
+noV:
+		beq	$t4,	0,	usedUpagain
+		j	Recover
+
+healE:
+		bne	$s0,	1,	gbackV
+		bne	$t0,	0,	Recover			
+		j 	enemyMove
+gbackV:	
+		bne	$t1,	0,	Recover
+		j	enemyMove
 Recover:
 		jal	generateRandom
 		addi	$s3,	$a0,	1
+
 
 determine4:
 		bne	$s1,	1,	healV
@@ -321,7 +348,8 @@ determine4:
 		add	$a0,	$zero,	$s3
 		syscall
 		li	$s1,	2
-		j	determine
+		subi	$t0,	$t0,	1
+		j	print
 healV:
 		add	$s4,	$s4,	$s3
 		li	$v0,	4
@@ -330,8 +358,10 @@ healV:
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
-		li	$s1,	1		
-		j	determine
+		li	$s1,	1
+		subi	$t1,	$t1,	1		
+		j	print
+
 		
 generateRandom:
 		li	$v0,	42
@@ -340,8 +370,11 @@ generateRandom:
 		syscall
 		jr	$ra
 
-
-print:		li	$v0,	4
+print:		
+		li	$v0,	4
+		la	$a0,	Divider1
+		syscall
+		li	$v0,	4
 		la	$a0,	Vader1
 		syscall
 		
@@ -380,59 +413,31 @@ print:		li	$v0,	4
 		li	$v0,	4
 		la	$a0,	Vader10
 		syscall
-		
+								
 		li	$v0,	4
-		la	$a0,	Vader11
+		la	$a0,	VaderHp
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$s5
 		syscall
 		
 		li	$v0,	4
-		la	$a0,	Vader12
+		la	$a0,	VaderNo
 		syscall
 		
+		li	$v0,	1
+		add	$a0,	$zero,	$t4
+		syscall
+
 		li	$v0,	4
-		la	$a0,	Vader13
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader14
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader15
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader16
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader17
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader18
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader19
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader20
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader21
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Vader22
-		syscall
-		
+		la	$a0,	Divider2
+		syscall		
+
 		li	$v0,	4
 		la	$a0,	Yoda1
-		syscall
-		
+		syscall		
+						
 		li	$v0,	4
 		la	$a0,	Yoda2
 		syscall
@@ -470,83 +475,27 @@ print:		li	$v0,	4
 		syscall
 		
 		li	$v0,	4
-		la	$a0,	Yoda11
+		la	$a0,	YodaHp
+		syscall
+		
+		li	$v0,	1
+		add	$a0,	$zero,	$s4
 		syscall
 		
 		li	$v0,	4
-		la	$a0,	Yoda12
+		la	$a0,	YodaNo
 		syscall
 		
-		li	$v0,	4
-		la	$a0,	Yoda13
+		li	$v0,	1
+		add	$a0,	$zero,	$t3
 		syscall
+						
+		li	$v0,	4
+		la	$a0,	Divider1
+		syscall		
+		j	determine
 		
-		li	$v0,	4
-		la	$a0,	Yoda14
-		syscall
 		
-		li	$v0,	4
-		la	$a0,	Yoda15
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda16
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda17
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda18
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda19
-		syscall
-
-		li	$v0,	4
-		la	$a0,	Yoda20
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda21
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda22
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda23
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda24
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda25
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda26
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda27
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda28
-		syscall
-		
-		li	$v0,	4
-		la	$a0,	Yoda29
-		syscall
-				
-		
-
 endProgram:	li	$v0,	59
 		la	$a0,	endOutput
 		la	$a1,	endOutput2
