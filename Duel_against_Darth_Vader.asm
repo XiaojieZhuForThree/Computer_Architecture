@@ -33,7 +33,7 @@ YodaSuper:	.asciiz		"\nMaster Yoda striked Darth Vader with the force, causing d
 YodaHeal:	.asciiz		"\nMaster Yoda healed himseilf, HP increases by: "
 
 VaderHit:	.asciiz		"\nLord Vader striked Yoda, causing damage: "
-VaderSuper:	.asciiz		"\nLord Vader striked Yoda with the force, causing damage: "
+VaderSuper:	.asciiz		"\nLord Vader striked Yoda with the dark force, causing damage: "
 VaderHeal:	.asciiz		"\nLord Vader healed himseilf, HP increases by: "
 
 Divider1:	.asciiz		"##################################################################"
@@ -239,7 +239,7 @@ Hit:
 		addi	$s3,	$a0,	1
 		
 determine2:
-		bne	$s1,	1,	hitY
+		bne	$s1,	1,	hitV
 		sub	$s5,	$s5,	$s3
 		li	$v0,	4
 		la	$a0,	YodaHit
@@ -249,7 +249,7 @@ determine2:
 		syscall
 		li	$s1,	2
 		j	determine
-hitY:
+hitV:
 		sub	$s4,	$s4,	$s3
 		li	$v0,	4
 		la	$a0,	VaderHit
@@ -277,7 +277,7 @@ backV:
 		bne	$t3,	0,	Super
 		j	enemyMove
 
-Super:		jal	whichOne
+Super:		
 		jal	generateRandom
 		addi	$s3,	$a0,	1
 		add	$s3,	$s3,	$s3
