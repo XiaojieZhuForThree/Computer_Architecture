@@ -2,7 +2,7 @@
 # # This is a small game with star wars background                                                                    #
 # # you can choose to play Darth Vader or Master Yoda, and the computer will choose the other one                     #     
 # # your goal is to defeat the computer's character.                                                                  #
-                                                                                                                      #
+#                                                                                                                      #
 # # before running the program, please enlarge the Run I/O to fullest scale, for the game includes some ascii arts    #
 # # each character has unlimited strike times, 3 opportunities to use the great hit, and 3 opportunities to heal.     #
 #######################################################################################################################
