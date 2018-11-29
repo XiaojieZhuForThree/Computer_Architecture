@@ -1,3 +1,13 @@
+#######################################################################################################################
+# # This is a small game with star wars background                                                                    #
+# # you can choose to play Darth Vader or Master Yoda, and the computer will choose the other one                     #     
+# # your goal is to defeat the computer's character.                                                                  #
+                                                                                                                      #
+# # before running the program, please enlarge the Run I/O to fullest scale, for the game includes some ascii arts    #
+# # each character has unlimited strike times, 3 opportunities to use the great hit, and 3 opportunities to heal.     #
+#######################################################################################################################
+	
+		
 	.data
 greeting:	.asciiz		""
 input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want to play: 1. Yoda, 2. Darth Vader\n You can always quit the game by clicking 'Cancel'"
@@ -104,11 +114,11 @@ Yoda29:		.asciiz		 "\n                  -.t-._: "
 YodaWin1:	.asciiz 	"\nCongratulations Master Yoda,"
 YodaWin2:	.asciiz		" you brought balance to the force and the galaxy."
 YodaLose1:	.asciiz		"\nI'm sorry Master Yoda,"
-YodaLose2:	.asciiz		" you are defeated by the dark force."
+YodaLose2:	.asciiz		" perhaps you're too old to use your light saber?"
 VaderWin1:	.asciiz		"Congratulations Lord Vader,"
-VaderWin2:	.asciiz		" you defended the honor of the Empire!"
-VaderLose1:	.asciiz		"I'm sorry Lord Vader,"
-VaderLose2:	.asciiz		" you've failed and disappointed the Emperor!"
+VaderWin2:	.asciiz		" you just beat the galaxy's most honored Jedi!"
+VaderLose1:	.asciiz		"It's over Anakin,"
+VaderLose2:	.asciiz		" the Jedi has the high ground again!"
 
 
 	.text
@@ -174,6 +184,7 @@ pickV:
 start:
 		addi	$s7,	$zero,	1
 		add	$t2,	$zero,	$zero
+		j	print
 		
 determine:
 		ble	$s4,	0,	VaderWin
