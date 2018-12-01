@@ -1,86 +1,85 @@
 #######################################################################################################################
 # # This is a small game with star wars background                                                                    #
 # # you can choose to play Darth Vader or Master Yoda, and the computer will choose the other one                     #     
-# # your goal is to defeat the computer's character.                                                                  #
-#                                                                                                                      #
-# # before running the program, please enlarge the Run I/O to fullest scale, for the game includes some ascii arts    #
+# # your goal is to use your character to defeat the computer's character.                                            #
+#                                                                                                                     #
+# # before running the program, please enlarge the Run I/O to fullest scale, for the game includes some ASCII arts    #
 # # each character has unlimited strike times, 3 opportunities to use the great hit, and 3 opportunities to heal.     #
 #######################################################################################################################
 	
 		
 	.data
-greeting:	.asciiz		""
-input:		.asciiz		"Welcome to the galaxy! \nPlease select the character you want to play: 1. Yoda, 2. Darth Vader\n You can always quit the game by clicking 'Cancel'"
-buffer:		.space		2
+# start the game, a dialog box will pop out that prompts the player to input a number that represents the character of the game, or click 'cancel' to end the game
+input:		.asciiz		"Welcome to the galaxy! \nPlease select the number of the character you want to play: 1. Yoda, 2. Darth Vader\n You can always quit the game by clicking 'Cancel'"
 
+# if the user inputs the valid number, another dialog box will direct the user for further operations
 outputY:	.asciiz		"You have selected Yoda."
-outputYm:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
 outputV:	.asciiz		"You have selected Darth Vader."
-outputVm:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
 output2:	.asciiz		" Let's begin!"
 
-wrong:		.asciiz		"Invalid input, "
-used:		.asciiz		"You can no longer use the force anymore, "
-usedAgain:	.asciiz		"You can no longer use the heal anymore, "
-goback:		.asciiz		"please select a character."
-goback2:	.asciiz		"please select a move."
-goback3:	.asciiz		"please select another move"
 
-noValue:	.asciiz		"You didn't pick a character, "
-noMove:		.asciiz		"You didn't pick a move, "
-return:		.asciiz		"please select one."
-
-endOutput:	.asciiz		"I hope you enjoy the game, "
-endOutput2:	.asciiz		"may the force be with you!"
-
+# characters: 1 for Yoda and 2 for Vader
 Yoda:		.byte		1
 Vader:		.byte		2
 
+
+# to continue the game, the dialog box will ask the user to input the number that represents operations, or click cancel to end the game.
+outputYm:	.asciiz		"Master Yoda, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
+outputVm:	.asciiz		"Lord Vader, it's your turn! \nWhat do you want to do: 1. Attack, 2. Use the dark force, 3. Recover\n You can always quit the game by clicking 'Cancel'"
+
+
+# in case of wrong character input, different feedback will be present
+noValue:	.asciiz		"You didn't pick a character, "		# if the user doesn't input any value, 
+return:		.asciiz		"please select one."			# the dialog box will ask the user to input one
+
+wrong:		.asciiz		"Invalid input, "			# if the input is not acceptable
+goback:		.asciiz		"please select a character."		# another input will be asked 
+
+
+# in case of wrong operation input, different feedback will be present
+noMove:		.asciiz		"You didn't pick a move, "		# if the user doesn't input any value, 
+goback2:	.asciiz		"please select a move."			# the dialog box will ask the user to input one
+
+used:		.asciiz		"You can no longer use the force anymore, "	# if the user used up the special skills(great hit or heal)
+usedAgain:	.asciiz		"You can no longer use the heal anymore, "
+goback3:	.asciiz		"please select another move"			# another input will be asked
+
+
+# dialogs used to end the game 
+endOutput:	.asciiz		"I hope you enjoy the game, "			
+endOutput2:	.asciiz		"may the force be with you!"
+
+# operations: 1 for hit, 2 for great hit, and 3 for heal
 keyHit:		.byte		1
 keySuper:	.byte		2
 keyRecover:	.byte		3
 
+# the opertaion record for Yoda
 YodaHit:	.asciiz		"\nMaster Yoda striked Darth Vader, causing damage: "
 YodaSuper:	.asciiz		"\nMaster Yoda striked Darth Vader with the force, causing damage: "
 YodaHeal:	.asciiz		"\nMaster Yoda healed himseilf, HP increases by: "
 
+# the opertaion record for Vader
 VaderHit:	.asciiz		"\nLord Vader striked Yoda, causing damage: "
 VaderSuper:	.asciiz		"\nLord Vader striked Yoda with the dark force, causing damage: "
 VaderHeal:	.asciiz		"\nLord Vader healed himseilf, HP increases by: "
 
-Divider1:	.asciiz		"\n##################################################################"
-Divider2:	.asciiz		"\n------------------------------------------------------------------"
-
-VaderHp:	.asciiz		"\nLord Vader has HP remaining: "
-VaderNoF:	.asciiz		", force slot remaing: "
-VaderNoH:	.asciiz		", healing slot remaing: "
+# the status record for Yoda
 YodaHp:		.asciiz		"\nMaster Yoda has HP remaining: "
 YodaNoF:	.asciiz		", force slot remaing: "
 YodaNoH:	.asciiz		", healing slot remaing: "
 
-Vader1:		.asciiz		"\n                       .-."
-Vader2:		.asciiz		"\n                      |_:_|"
-Vader3:		.asciiz		"\n                     /(_Y_)\\"
-Vader4:		.asciiz		"\n.                   (  \/M\/  )"
-Vader5:		.asciiz		"\n '.               _.'-/'-'\-'._"
-Vader6:		.asciiz		"\n   ':           _/.--'[[[[]'--.\\_"
-Vader7:		.asciiz		"\n     ':        /_'  : |::| :    .\\"
-Vader8:		.asciiz		"\n       ':     //   ./ |oUU| \.'  :\\"
-Vader9:		.asciiz		"\n         ':  _:'..' \_|___|_/ :   :|"
-Vader10:	.asciiz		"\n           ':.  .'  |_[___]_|  :.':\\"
-Vader11:	.asciiz		"\n            [::\ |  :  | |  :   ; : \\"
-Vader12:	.asciiz		"\n             '-'   \/'.| |.' \  .;.' |"
-Vader13:	.asciiz		"\n             |\_    \  '-'   :       |"
-Vader14:	.asciiz		"\n             |  \    \ .:    :   |   |"
-Vader15:	.asciiz		"\n             |   \    | '.   :    \  |"
-Vader16:	.asciiz		"\n             /       \   :. .;       |"
-Vader17:	.asciiz		"\n            /     |   |  :__/     :  \\"
-Vader18:	.asciiz		"\n           |  |   |    \:   | \   |   ||"
-Vader19:	.asciiz		"\n          /    \  : :  |:   /  |__|   /|"
-Vader20:	.asciiz		"\n          |     : : :_/_|  /'._\  '--|_\\"
-Vader21:	.asciiz		"\n          /___.-/_|-'   \  \_"
-Vader22:	.asciiz		"\n                         '-'"
+# the status record for Vader
+VaderHp:	.asciiz		"\nLord Vader has HP remaining: "
+VaderNoF:	.asciiz		", force slot remaing: "
+VaderNoH:	.asciiz		", healing slot remaing: "
 
+# lines for separating the operations
+Divider1:	.asciiz		"\n##################################################################"
+Divider2:	.asciiz		"\n------------------------------------------------------------------"
+
+
+# ASCII art for Yoda, used in record feedback
 Yoda1:		.asciiz		 "\n                    ____"
 Yoda2:		.asciiz		 "\n                 _.' :  `._"
 Yoda3:		.asciiz		 "\n             .-.'`.  ;   .'`.-."
@@ -110,6 +109,32 @@ Yoda26:		.asciiz		 "\n         \ / .-    /.     . .  ;_:     ;"
 Yoda27:		.asciiz		 "\n          :-  -.`./-.      /    `.___. "
 Yoda28:		.asciiz		 "\n                \ `t  ._  /  --- :F_P:"
 Yoda29:		.asciiz		 "\n                  -.t-._: "
+
+
+# ASCII art for Vader, used in record feedback
+Vader1:		.asciiz		"\n                       .-."
+Vader2:		.asciiz		"\n                      |_:_|"
+Vader3:		.asciiz		"\n                     /(_Y_)\\"
+Vader4:		.asciiz		"\n.                   (  \/M\/  )"
+Vader5:		.asciiz		"\n '.               _.'-/'-'\-'._"
+Vader6:		.asciiz		"\n   ':           _/.--'[[[[]'--.\\_"
+Vader7:		.asciiz		"\n     ':        /_'  : |::| :    .\\"
+Vader8:		.asciiz		"\n       ':     //   ./ |oUU| \.'  :\\"
+Vader9:		.asciiz		"\n         ':  _:'..' \_|___|_/ :   :|"
+Vader10:	.asciiz		"\n           ':.  .'  |_[___]_|  :.':\\"
+Vader11:	.asciiz		"\n            [::\ |  :  | |  :   ; : \\"
+Vader12:	.asciiz		"\n             '-'   \/'.| |.' \  .;.' |"
+Vader13:	.asciiz		"\n             |\_    \  '-'   :       |"
+Vader14:	.asciiz		"\n             |  \    \ .:    :   |   |"
+Vader15:	.asciiz		"\n             |   \    | '.   :    \  |"
+Vader16:	.asciiz		"\n             /       \   :. .;       |"
+Vader17:	.asciiz		"\n            /     |   |  :__/     :  \\"
+Vader18:	.asciiz		"\n           |  |   |    \:   | \   |   ||"
+Vader19:	.asciiz		"\n          /    \  : :  |:   /  |__|   /|"
+Vader20:	.asciiz		"\n          |     : : :_/_|  /'._\  '--|_\\"
+Vader21:	.asciiz		"\n          /___.-/_|-'   \  \_"
+Vader22:	.asciiz		"\n                         '-'"
+
 
 YodaWin1:	.asciiz 	"\nCongratulations Master Yoda,"
 YodaWin2:	.asciiz		" you brought balance to the force and the galaxy."
