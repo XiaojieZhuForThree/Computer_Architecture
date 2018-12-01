@@ -2,9 +2,14 @@
 # # This is a small game with star wars background                                                                    #
 # # you can choose to play Darth Vader or Master Yoda, and the computer will choose the other one                     #     
 # # your goal is to use your character to defeat the computer's character.                                            #
-#                                                                                                                     #
-# # before running the program, please enlarge the Run I/O to fullest scale, for the game includes some ASCII arts    #
+# #                                                                                                                   #
+# # before running the program, please enlarge the Run I/O to fullest scale, and clear the previous logs, 	      #
+# # for the game includes some ASCII arts                                                                             #	
+# #      													      #
 # # each character has unlimited strike times, 3 opportunities to use the great hit, and 3 opportunities to heal.     #
+# # 														      #
+# # the hit point range for strike is 1 - 10, the hit point range for great hit is 11 - 20, and the recover range for #
+# #  heal is 1 - 10                                                                                                   #
 #######################################################################################################################
 	
 		
@@ -75,8 +80,8 @@ VaderNoF:	.asciiz		", force slot remaing: "
 VaderNoH:	.asciiz		", healing slot remaing: "
 
 # lines for separating the operations
-Divider1:	.asciiz		"\n##################################################################"
-Divider2:	.asciiz		"\n------------------------------------------------------------------"
+Divider1:	.asciiz		"\n#########################################################################################"
+Divider2:	.asciiz		"\n-----------------------------------------------------------------------------------------"
 
 
 # ASCII art for Yoda, used in record feedback
@@ -135,70 +140,84 @@ Vader20:	.asciiz		"\n          |     : : :_/_|  /'._\  '--|_\\"
 Vader21:	.asciiz		"\n          /___.-/_|-'   \  \_"
 Vader22:	.asciiz		"\n                         '-'"
 
-
+# outcomes:
+# 1. Yoda wins
 YodaWin1:	.asciiz 	"\nCongratulations Master Yoda,"
 YodaWin2:	.asciiz		" you brought balance to the force and the galaxy."
+# 2. Yoda loses
 YodaLose1:	.asciiz		"\nI'm sorry Master Yoda,"
 YodaLose2:	.asciiz		" perhaps you're too old to use your light saber?"
+# 3. Vader wins
 VaderWin1:	.asciiz		"Congratulations Lord Vader,"
 VaderWin2:	.asciiz		" you just beat the galaxy's most honored Jedi!"
+# 4. Vader loses
 VaderLose1:	.asciiz		"It's over Anakin,"
 VaderLose2:	.asciiz		" the Jedi has the high ground again!"
 
 
 	.text
-initial:	
+	# to initialize the game, set both characters's HP to 100, and the special skill slots for great hit and heal to 3
+initial:				
 		li	$s4,	100			# Yoda's HP
 		li	$s5,	100			# Vader's HP
 		li	$t3,	3			# Yoda's force slot
 		li	$t4,	3			# Vader's force slot
 		li	$t0,	3			# Yoda's heal slot
 		li	$t1,	3			# Vader's heal slot
-		
+	
+	# a dialog to ask the user to input the character that he/she wants to play	
 prompt:		li	$v0,	51			# input the character
 		la	$a0,	input
 		syscall
-		
-pick:	
-		li	$t7,	-2	
-		beq	$a1,	$t7,	endProgram
-		li	$t7,	-3	
-		beq	$a1,	$t7,	repick
-		li	$t7,	-1
-		beq	$a1,	$t7,	invalid
-		j	log
-
 	
+	# determine if the input is valid, and according to the status value, the program will have different reply		
+pick:	
+		li	$t7,	-2			# if the user clicks 'Cancel'
+		beq	$a1,	$t7,	endProgram	# the program will end
+		
+		li	$t7,	-3			# if the user doesn't input any value
+		beq	$a1,	$t7,	repick		# the program will ask the user to input one
+		
+		li	$t7,	-1			# if the input is not legal
+		beq	$a1,	$t7,	invalid		# the program will ask the user to input another one
+		j	log				# else, the program will record the character the user picks
+
+# to ask the user to input a value	
 repick:		li	$v0,	59
 		la	$a0,	noValue
 		la	$a1,	return
 		syscall
 		j	prompt
 
-
+# to ask the user to input another value
 invalid:	li	$v0,	59
 		la	$a0,	wrong
 		la	$a1,	goback
 		syscall
 		j	prompt
-		
+
+# to record the character the user picks		
 log:		
 		add	$s0,	$a0,	$zero
 		add	$s1,	$a0,	$zero	
+
+# according to which character the user inputs, the program will have different dialog background
 prep:				
 		lb	$t5,	Yoda
 		beq	$s0,	$t5,	pickY	
 		lb	$t5,	Vader
 		beq	$s0,	$t5,	pickV
-		j	invalid
+		# if the user inputs a number that's not 1 or 2, the program will go back to ask the user to input another value
+		j	invalid				
 
+# if the user picks Yoda, all following dialogs will put Yoda as the character
 pickY:	
 		li	$v0,	59
 		la	$a0,	outputY
 		la	$a1,	output2
 		syscall
 		j	start
-		
+# if the user picks Vader, all following dialogs will put Vader as the character		
 pickV:	
 		li	$v0,	59
 		la	$a0,	outputV
@@ -206,29 +225,39 @@ pickV:
 		syscall
 		j	start
 
+# start the duel, first set the first move, then print the character's status
 start:
-		addi	$s7,	$zero,	1
-		add	$t2,	$zero,	$zero
+		addi	$s7,	$zero,	1	# use register $s7 to determine which move it is, the first move will always be the user
+		add	$t2,	$zero,	$zero	# the seed used to generate a random number for strike, great hit, and heal
 		j	print
-		
+
+# the first determiner		
 determine:
-		ble	$s4,	0,	VaderWin
+		# if the hitpoint of either character becomes less than or equal to 0, a winner and a loser will be determined
+		ble	$s4,	0,	VaderWin		
 		ble	$s5,	0,	YodaWin		
+		# according to the character the user input, different demostration will be printed.
 		bne	$s0,	1,	pickVm
 		la	$a0,	outputYm
 		j	determiner
 		
 pickVm:		la	$a0,	outputVm
 
+# the second determiner
 determiner:	
-		bne	$s7,	$zero,	yourMove		
+		# first will determine whose move it is, and feed the operation accordingly
+		bne	$s7,	$zero,	yourMove		# 1 for your move, 0 for enemy's move
 
+# for the enemy's move
 enemyMove:	
+		# first set the move register to 1, so the next move will be the user's
 		addi	$s7,	$zero,	1
+		# generate a random number from 1, 2, or 3 to determine which move the enemy will take
 		jal	enemyRan
 		addi	$a0,	$a0,	1
 		j	whatYouDo
-		
+
+# pick a random number for operation for enemy 		
 enemyRan:
 		li	$v0,	42
 		add	$a0,	$zero,	$t2
@@ -236,23 +265,31 @@ enemyRan:
 		syscall
 		addi	$t2,	$t2,	1		
 		jr 	$ra						
-						
+
+# for the user's move												
 yourMove:	
+		# first set the move to 0, so the next move will be the enemy
 		add	$s7,	$zero,	$zero
 
+# the user can pick the operation by him/herself
 movePrompt:			
 		li	$v0,	51
 		syscall
 
+# check if the operation number is valid or not
 validOrNot:
-		li	$t7,	-2	
-		beq	$a1,	$t7,	endProgram
-		li	$t7,	-3	
-		beq	$a1,	$t7,	reEnter
-		li	$t7,	-1
-		beq	$a1,	$t7,	noSuch
+		li	$t7,	-2			# if the user clicks "Cancel", 
+		beq	$a1,	$t7,	endProgram	# the program will end
+		
+		li	$t7,	-3			# if the user doesn't input a value, 
+		beq	$a1,	$t7,	reEnter		# the program will ask the user to input one
+		
+		li	$t7,	-1			# if the value is not legal
+		beq	$a1,	$t7,	noSuch		# the program will ask the user to input another one
+		# if the value is legal, the program will do the determining accordingly
 		j	whatYouDo
 
+# tells the user that he/she didn't input a value and ask the user to input one
 reEnter:
 		li	$v0,	59
 		la	$a0,	noMove
@@ -261,6 +298,7 @@ reEnter:
 		addi	$s7,	$zero,	1
 		j	determine
 
+# tells the user that his/her input is illegal and prompts the user to input another one
 noSuch:
 		li	$v0,	59
 		la	$a0,	wrong
@@ -269,6 +307,8 @@ noSuch:
 		addi	$s7,	$zero,	1
 		j	determine	
 
+# if the user's character used up the special skill slots, and he/she input the special skill, 
+# then the program will ask the user to re enter another move
 usedUp:
 		li	$v0,	59
 		la	$a0,	used
@@ -285,32 +325,39 @@ usedUpAgain:
 		addi	$s7,	$zero,	1
 		j	determine	
 
+# the determiner used to determine the character's operation based on your input
 whatYouDo:	
-		lb	$t5,	keyHit
-		beq	$a0,	$t5,	Hit	
-		lb	$t5,	keySuper
-		beq	$a0,	$t5,	whichOne
-		lb	$t5,	keyRecover
-		beq	$a0,	$t5,	healWhich
-		j	noSuch		
+		lb	$t5,	keyHit		 # if 1 is the input, 
+		beq	$a0,	$t5,	Hit	 # the program will go to the determiner for strike
 		
+		lb	$t5,	keySuper	 # if 2 is the input, 
+		beq	$a0,	$t5,	whichOne # the program will go to the determiner for great hit
+		
+		lb	$t5,	keyRecover	  # if 3 is the input, 
+		beq	$a0,	$t5,	healWhich # the program will go to the determiner for heal
+		# otherwise, the program will ask the user for another value
+		j	noSuch		
+
+# if the character input 1, the program will generate a random number as the strike value, 
+# and deduct the value from the opposite character's HP		
 Hit:
 		jal	generateRandom
 		addi	$s3,	$a0,	1
 		
 determine2:
-		bne	$s1,	1,	hitV
+		bne	$s1,	1,	hitV		# based on which character the user picks, the program will select who's strike it would be
 		li	$s1,	2
-		sub	$s5,	$s5,	$s3
+		sub	$s5,	$s5,	$s3		# deduct the value from the opposite character's HP
 		li	$v0,	4
-		la	$a0,	YodaHit
+		la	$a0,	YodaHit			# then print the operation to the I/O console
 		syscall
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
 		syscall
 		beq	$s7,	1,	print
-		j	determine
-		
+		j	determine			# after the operation is finished, jump back to the first determiner
+
+# hit operation for Vader		
 hitV:
 		li	$s1,	1
 		sub	$s4,	$s4,	$s3
@@ -323,35 +370,42 @@ hitV:
 		beq	$s7,	1,	print
 		j	determine
 
+# if 2 is the input, the program first will determine if the character has great hit slot remaining
 whichOne:	
-		bne	$s7,	0,	goE
-		bne	$s0,	1,	seeV
-		bgt	$t3,	0,	Super	
+		bne	$s7,	0,	goE		# based on whose move, the program will determine who will carray out the great hit 
+		bne	$s0,	1,	seeV		# based on which character the user chooses, the program will determine who will carray out the great hit 
+		bgt	$t3,	0,	Super		# if the character still has slot, the program will allow the character to use the great hit
+		# otherwise, the program will ask for another operation input
 		j	usedUp
 
-seeV:
-		bgt	$t4,	0,	Super
-		j	usedUp
-
+# great hit determiner for the enemy
 goE:
 		bne	$s0,	1,	backV
 		bgt	$t4,	0,	Super			
 		j 	enemyMove
+# great hit determiner for vader		
+seeV:
+		bgt	$t4,	0,	Super
+		j	usedUp
 		
+# if the enemy doesn't have slot left, the program will reenter anothe random value for him				
 backV:	
 		bgt	$t3,	0,	Super
 		j	enemyMove
 
+# the super operation will generate a random number from 1 to 10, then add 10 to it
 Super:		
 		jal	generateRandom
 		addi	$s3,	$a0,	1
 		addi	$s3,	$s3,	10
+
+# after determining whose move it is, the program will deduct the number from the opposite one's HP
 determine3:
 		bne	$s1,	1,	superV
 		sub	$s5,	$s5,	$s3
 		subi	$t3,	$t3,	1
 		li	$v0,	4
-		la	$a0,	YodaSuper
+		la	$a0,	YodaSuper			# and print the operation record
 		syscall
 		li	$v0,	1
 		add	$a0,	$zero,	$s3
@@ -359,6 +413,8 @@ determine3:
 		li	$s1,	2
 		beq	$s7,	1,	print
 		j	determine
+
+# operation part for Vader
 superV:
 		sub	$s4,	$s4,	$s3
 		subi	$t4,	$t4,	1
@@ -372,6 +428,7 @@ superV:
 		beq	$s7,	1,	print
 		j	determine
 
+# Similarly, if 3 is the input, the program first will determine whether the character still has heal slot remaining
 healWhich:	
 		bne	$s7,	0,	determineE
 		bne	$s0,	1,	noV
@@ -381,6 +438,7 @@ noV:
 		beq	$t1,	0,	usedUpAgain
 		j	Recover
 
+# heal determiner for the enemy
 determineE:
 		bne	$s0,	2,	gbackY
 		bgt	$t0,	0,	Recover			
@@ -388,10 +446,14 @@ determineE:
 gbackY:	
 		bgt	$t1,	0,	Recover
 		j	enemyMove
+
+# if the character still has slot, the program will allow him to heal himself
 Recover:
+		# the range for one recover is from 1 to 10
 		jal	generateRandom
 		addi	$s3,	$a0,	1
 
+# to determine whose HP will be recovered
 determine4:
 		bne	$s1,	1,	healV
 		add	$s4,	$s4,	$s3
@@ -407,10 +469,11 @@ determine4:
 		beq	$s7,	1,	print
 		j	determine
 
+# the HP cannot pass 100, so if the character heals himself to over 100, the value will be reset to 100
 healthdeterminerY:
 		bgt	$s4,	100,	resetY
 		jr	$ra
-
+# if Yoda's HP surpass 100, reset it to 100
 resetY:
 		addi	$s4,	$zero,	100
 		jr	$ra
@@ -432,12 +495,12 @@ healV:
 healthdeterminerV:
 		bgt	$s5,	100,	resetV
 		jr	$ra
-
+# if Vader's HP surpass 100, reset it to 100
 resetV:
 		addi	$s5,	$zero,	100
 		jr	$ra
 
-		
+# used to generate a random number from 0 to 9		
 generateRandom:
 		li	$v0,	42
 		add	$a0,	$zero,	$t2
@@ -446,6 +509,7 @@ generateRandom:
 		addi	$t2,	$t2,	1
 		jr	$ra
 
+# this part is used to print each operation log and the ASCII art for Vader and Yoda
 print:		
 		li	$v0,	4
 		la	$a0,	Divider1
@@ -588,19 +652,19 @@ print:
 		syscall		
 		j	determine
 		
-
+# the outcome for Vader's victory
 VaderWin:
 		jal	finalPrint
 		jal	ImperialMarch
 		bne	$s0,	1,	win1
 		j	lose1
-		
+# if the user picks Vader, then the user wins		
 win1:		li	$v0,	59
 		la	$a0,	VaderWin1
 		la	$a1,	VaderWin2
 		syscall
 		j	endProgram	
-
+# if the user picks Yoda, then the user loses	
 lose1:		
 		li	$v0,	59
 		la	$a0,	YodaLose1
@@ -608,27 +672,28 @@ lose1:
 		syscall
 		j	endProgram
 						
-												
+# the outcome for Yoda's victory												
 YodaWin:
 		jal	finalPrint
 		jal	newHope
 		bne	$s0,	2,	win2
 		j	lose2
-
+# if the user picks Yoda, the user wins
 win2:
 		li	$v0,	59
 		la	$a0,	YodaWin1
 		la	$a1,	YodaWin2
 		syscall
 		j	endProgram	
-
+# if the user picks Vader, the user loses
 lose2:		
 		li	$v0,	59
 		la	$a0,	VaderLose1
 		la	$a1,	VaderLose2
 		syscall
 		j	endProgram
-		
+
+# the music for Vader's victory		
 ImperialMarch:
 		li	$v0,	33
 		li	$a0, 	55
@@ -694,6 +759,7 @@ ImperialMarch:
 		syscall
 		jr	$ra	
 
+# the music for Yoda's victory
 newHope:
 		li	$v0,	33
 		li	$a0, 	62
@@ -807,7 +873,8 @@ newHope:
 		li	$a3,	127
 		syscall
 		jr	$ra
-		
+
+# the finally print of the character's status, after a winner has been determined				
 finalPrint:	
 		beq	$s7,	1,	noPrint
 		li	$v0,	4
@@ -953,7 +1020,8 @@ finalPrint:
 
 noPrint:
 		jr	$ra																				
-																																																												
+
+# to exit the program properly.																																																																																																																								
 endProgram:	li	$v0,	59
 		la	$a0,	endOutput
 		la	$a1,	endOutput2
